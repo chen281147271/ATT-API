@@ -212,12 +212,14 @@ namespace ATT_API.BIZ
             foreach (var a in arrayworkday) {
                 List<Models.ATTModels.ATTModelInfo> temp = new List<ATTModels.ATTModelInfo>();
                 Models.ATTModels.ValidateATT validateATT = new ATTModels.ValidateATT();
-                string strstime = a + " 9:00:00";
+                string strstime = a + " 9:01:00";
                 DateTime stime = Convert.ToDateTime(strstime);
                 string stretime = a + " 18:30:00";
                 DateTime etime = Convert.ToDateTime(stretime);
                 string errmsg = "";
                 string CHECKTIME = "";
+                string strsstime = a + " 12:00:00";
+                DateTime sstime = Convert.ToDateTime(strsstime);
                 temp =list.Where(p => p.CHECKTIME.ToString("yyyy/M/d") == a && p.USERID==uid.ToString()).ToList();
                 if (temp.Count == 0)
                 {
@@ -234,12 +236,26 @@ namespace ATT_API.BIZ
                     var s = temp.Where(p => p.CHECKTIME < stime).ToList();
                     if (s.Count == 0 )
                     {
-                        errmsg += "早上迟到！  ";
+                        if (temp.Where(p => p.CHECKTIME < sstime).ToList().Count != 0)
+                        {
+                            errmsg += "早上迟到！  ";
+                        }
+                        else
+                        {
+                            errmsg += "早上漏打卡！  ";
+                        }
                     }
                     var e = temp.Where(p => p.CHECKTIME > etime).ToList();
                     if (e.Count == 0 )
                     {
-                        errmsg += "下午早退！   ";
+                        if (temp.Where(p => p.CHECKTIME > sstime).ToList().Count != 0)
+                        {
+                            errmsg += "下午早退！   ";
+                        }
+                        else
+                        {
+                            errmsg += "下午漏打卡！  ";
+                        }
                     }
                     foreach(var ctime in temp)
                     {
@@ -397,6 +413,143 @@ namespace ATT_API.BIZ
             {
                 return -1;
             }
+        }
+        public Models.ATTModels.SetXList SetX(DateTime sTime, DateTime eTime, int UID)
+        {
+            List<Models.ATTModels.SetXUpInfo> setXUpInfos = new List<ATTModels.SetXUpInfo>();
+            Models.ATTModels.SetXList setXList = new ATTModels.SetXList();
+            int upday = 0;
+            try
+            {
+                using (kaoqingEntities db = new kaoqingEntities())
+                {
+                    //step 1
+                    var TimeList=GetAllDays(sTime, eTime);
+                    Random random = new Random();
+                    foreach(var day in TimeList)
+                    {
+                        DateTime dt;
+                        dt = day.AddHours(23);
+                        dt = dt.AddMinutes(59);
+                        dt = dt.AddSeconds(59);
+                        DateTime SPM;
+                        DateTime EPM;
+                        SPM = day.AddHours(18);
+                        EPM = day.AddHours(18);
+                        EPM = EPM.AddMinutes(40);
+                        DateTime XBTime;
+                        DateTime SBTime;
+                        if (db.CHECKINOUT.Where(p=>p.CHECKTIME> day && p.CHECKTIME < dt).Count() > 20)
+                        {
+                            //setp 2
+                            int XBhour;
+                            int SBhour;
+                            if (db.CHECKINOUT.Where(p=>p.CHECKTIME> SPM && p.CHECKTIME < EPM).Count() > 10)
+                            {
+                                XBhour = 18;
+                            }
+                            else
+                            {
+                                XBhour = 16;
+                            }
+                            int XBMinute = random.Next(30, 40);
+                            int XBsecond = random.Next(0, 59);
+                            XBTime = day.AddHours(XBhour);
+                            XBTime = XBTime.AddMinutes(XBMinute);
+                            XBTime = XBTime.AddSeconds(XBsecond);
+
+                            SBhour = 8;
+                            int SBMinute = random.Next(45, 59);
+                            int SBsecond = random.Next(0, 59);
+                            SBTime = day.AddHours(SBhour);
+                            SBTime = SBTime.AddMinutes(SBMinute);
+                            SBTime = SBTime.AddSeconds(SBsecond);
+
+                            //setp 3
+                            DateTime CDtime = day.AddHours(9);
+                            CDtime = CDtime.AddMinutes(3);
+                            DateTime ZTtime = day.AddHours(16);
+                            string sql;
+                            bool updayflag = false;
+                            Models.ATTModels.SetXUpInfo setXUpInfo = new ATTModels.SetXUpInfo();
+                            var temp = db.CHECKINOUT.Where(p => p.CHECKTIME > day && p.CHECKTIME < dt && p.USERID == UID).ToList();
+                            if (temp.Count == 0)
+                            {
+                                //setp 3.1
+                                //sql = "DELETE CHECKINOUT WHERE CONVERT(varchar(100), CHECKTIME, 111)= '" + day.ToString("yyyy/MM/dd") + "' and USERID=" + UID.ToString();
+                                //db.Database.ExecuteSqlCommand(sql);
+                                List<string> sqllist = new List<string>();
+                                sql = "INSERT INTO CHECKINOUT(USERID,CHECKTIME,VERIFYCODE,SENSORID,WorkCode,sn,UserExtFmt)VALUES("+UID.ToString()+",'" + SBTime.ToString() + "',1,101,0,3215154504760,1)";
+                                db.Database.ExecuteSqlCommand(sql);
+                                sqllist.Add(sql);
+                                sql = "INSERT INTO CHECKINOUT(USERID,CHECKTIME,VERIFYCODE,SENSORID,WorkCode,sn,UserExtFmt)VALUES(" + UID.ToString() + ",'" + XBTime.ToString() + "',1,101,0,3215154504760,1)";
+                                db.Database.ExecuteSqlCommand(sql);
+                                sqllist.Add(sql);
+                                updayflag = true;
+                                setXUpInfo.day = day.ToString();
+                                setXUpInfo.sql = sqllist;
+                            }
+                            else 
+                            {
+                                //setp 3.2
+                                List<string> sqllist = new List<string>();
+                                if (temp.Where(p => p.CHECKTIME < CDtime && p.USERID == UID).Count() == 0)
+                                {
+                                    sql = "DELETE CHECKINOUT WHERE  CHECKTIME > '" + day.ToString("yyyy/MM/dd 00:00:00") + "'and CHECKTIME<'" + day.ToString("yyyy/MM/dd 12:00:00") + "' and USERID=" + UID.ToString();
+                                    db.Database.ExecuteSqlCommand(sql);
+                                    sqllist.Add(sql);
+                                    sql = "INSERT INTO CHECKINOUT(USERID,CHECKTIME,VERIFYCODE,SENSORID,WorkCode,sn,UserExtFmt)VALUES(" + UID.ToString() + ",'" + SBTime.ToString() + "',1,101,0,3215154504760,1)";
+                                    db.Database.ExecuteSqlCommand(sql);
+                                    sqllist.Add(sql);
+                                    updayflag = true;
+                                    setXUpInfo.day = day.ToString();
+                                }
+                                //setp 3.3
+                                if(temp.Where(p => p.CHECKTIME > ZTtime && p.USERID == UID).Count() == 0)
+                                {
+                                    sql = "DELETE CHECKINOUT WHERE  CHECKTIME > '" + day.ToString("yyyy/MM/dd 16:00:00") + "'and CHECKTIME<'" + day.ToString("yyyy/MM/dd 23:59:59") + "' and USERID=" + UID.ToString();
+                                    db.Database.ExecuteSqlCommand(sql);
+                                    sqllist.Add(sql);
+                                    sql = "INSERT INTO CHECKINOUT(USERID,CHECKTIME,VERIFYCODE,SENSORID,WorkCode,sn,UserExtFmt)VALUES(" + UID.ToString() + ",'" + XBTime.ToString() + "',1,101,0,3215154504760,1)";
+                                    db.Database.ExecuteSqlCommand(sql);
+                                    sqllist.Add(sql);
+                                    updayflag = true;
+                                    setXUpInfo.day = day.ToString();
+                                }
+                                setXUpInfo.sql = sqllist;
+                            }
+                            if (updayflag)
+                            {
+                                upday++;
+                                setXUpInfos.Add(setXUpInfo);
+                            }
+                        }
+                    }
+                    setXList.Code = 0;
+                    setXList.Result = "Success";
+                    setXList.UpDays = upday;
+                    setXList.UpInfo = setXUpInfos;
+                    return setXList;
+                }
+            }
+            catch(Exception ex)
+            {
+                setXList.Code = -1;
+                setXList.Result = ex.Message;
+                setXList.UpDays = upday;
+                setXList.UpInfo = setXUpInfos;
+                return setXList;
+            }
+        }
+        private DateTime[] GetAllDays(DateTime dt1, DateTime dt2)
+        {
+            List<DateTime> listDays = new List<DateTime>();
+            DateTime dtDay = new DateTime();
+            for (dtDay = dt1; dtDay.CompareTo(dt2) <= 0; dtDay = dtDay.AddDays(1))
+            {
+                listDays.Add(dtDay);
+            }
+            return listDays.ToArray();
         }
     }
 }

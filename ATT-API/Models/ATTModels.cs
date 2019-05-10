@@ -60,5 +60,17 @@ namespace ATT_API.Models
             public List<UserInfo> list;
             public int ErrorCode { get; set; }
         }
+        public class SetXList
+        {
+            public int Code { get; set; }
+            public string Result { get; set; }
+            public int UpDays { get; set; }
+            public List<SetXUpInfo> UpInfo { get; set; }
+        }
+        public class SetXUpInfo
+        {
+            public string day { get; set; }
+            public  List<string> sql { get; set; }
+        }
     }
 }

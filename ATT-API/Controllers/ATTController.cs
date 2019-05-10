@@ -41,5 +41,11 @@ namespace ATT_API.Controllers
             var value = jsonText.value;
             return Ok(queryATT.Up_UserInfo(value));
         }
+        [HttpGet]
+        [Route("api/SetX")]
+        public IHttpActionResult SetX( DateTime sTime, DateTime eTime, int UID)
+        {
+            return Ok(queryATT.SetX( sTime, eTime, UID));
+        }
     }
 }
