@@ -334,6 +334,62 @@ namespace ATT_API.BIZ
                 return db.USERINFO.Where(p=>p.USERID==uid).FirstOrDefault().Name;
             }
         }
+        public Models.ATTModels.UserInfoList GetYGInfo(int PageSize, int CurPage,bool isall,string Key)
+        {
+            try
+            {
+                Models.ATTModels.UserInfoList list = new ATTModels.UserInfoList();
+                using (kaoqingEntities db = new kaoqingEntities())
+                {
+                    list.listtime = db.wokeday.Select(p => p.day).ToList();
+                    if (isall)
+                    {
+                        if (Key == null)
+                        {
+                            list.all = db.USERINFO.ToList().Skip((CurPage - 1) * PageSize).Take(PageSize).ToList();
+                        }
+                        else
+                        {
+                            list.all = db.USERINFO.Where(p=>p.Name.Contains(Key)).ToList().Skip((CurPage - 1) * PageSize).Take(PageSize).ToList();
+                        }
+                    }
+                    else 
+                    {
+                        if (Key == null)
+                        {
+                            list.all = db.USERINFO.Where(p => p.StateATT == 1).ToList().Skip((CurPage - 1) * PageSize).Take(PageSize).ToList();
+                        }
+                        else 
+                        {
+                            list.all = db.USERINFO.Where(p => p.StateATT == 1 && p.Name.Contains(Key)).ToList().Skip((CurPage - 1) * PageSize).Take(PageSize).ToList();
+                        }
+                    }
+                    list.ErrorCode = 0;
+                    if (isall)
+                    {
+                        if (Key == null)
+                        {
+                            list.tbCount = db.USERINFO.Count();
+                        }
+                        else {
+                            list.tbCount = db.USERINFO.Where(p => p.Name.Contains(Key)).Count();
+                        }
+                    }
+                    else
+                    {
+                        if (Key == null)
+                        {
+                            list.tbCount = db.USERINFO.Where(p => p.StateATT == 1).Count();
+                        }
+                        else {
+                            list.tbCount = db.USERINFO.Where(p => p.StateATT == 1 && p.Name.Contains(Key)).Count();
+                        }
+                    }
+                    return list;
+                }
+            }
+            catch { return null; }
+        }
         public Models.ATTModels.UserInfoList GetUserInfo()
         {
             List<Models.ATTModels.UserInfo> list = new List<Models.ATTModels.UserInfo>();
@@ -343,6 +399,7 @@ namespace ATT_API.BIZ
             {
                 using (kaoqingEntities db = new kaoqingEntities())
                 {
+
                     var T_list = db.USERINFO.Where(p => p.StateATT == 1).ToList();
                     foreach (var a in T_list)
                     {
@@ -350,6 +407,7 @@ namespace ATT_API.BIZ
                         userInfo.NAME = a.Name;
                         userInfo.StateATT = 1;
                         userInfo.USERID = a.USERID;
+                        userInfo.OPHONE = a.OPHONE;
                         list.Add(userInfo);
                     }
                     T_list = db.USERINFO.ToList();
@@ -359,6 +417,7 @@ namespace ATT_API.BIZ
                         userInfo.NAME = a.Name;
                         userInfo.StateATT = 0;
                         userInfo.USERID = a.USERID;
+                        userInfo.OPHONE = a.OPHONE;
                         listALL.Add(userInfo);
                     }
                     infoList.list = list;
@@ -550,6 +609,33 @@ namespace ATT_API.BIZ
                 listDays.Add(dtDay);
             }
             return listDays.ToArray();
+        }
+        public bool SetYGInfo(string USERID, string Name, string OPHONE, string StateATT)
+        {
+            try
+            {
+                using(kaoqingEntities db = new kaoqingEntities())
+                {
+                    var uid = Convert.ToInt32(USERID);
+                    var entity = db.USERINFO.Where(p => p.USERID == uid).FirstOrDefault();
+                    if (entity != null)
+                    {
+                        entity.Name = Name;
+                        entity.OPHONE = OPHONE;
+                        entity.StateATT =Convert.ToInt32(StateATT);
+                        db.USERINFO.Attach(entity);
+                        var stateEntity = ((IObjectContextAdapter)db).ObjectContext.ObjectStateManager.GetObjectStateEntry(entity);
+                        stateEntity.SetModifiedProperty("Name");
+                        stateEntity.SetModifiedProperty("OPHONE");
+                        stateEntity.SetModifiedProperty("StateATT");
+                        db.SaveChanges();
+                        return true;
+                    }
+                    return false;
+
+                }
+            }
+            catch { return false; }
         }
     }
 }

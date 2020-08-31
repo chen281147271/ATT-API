@@ -671,6 +671,13 @@
           <Property Name="UpdateId" Type="int" Nullable="false" />
           <Property Name="BadgeNumber" Type="nvarchar" MaxLength="20" />
         </EntityType>
+        <EntityType Name="wokeday">
+          <Key>
+            <PropertyRef Name="sid" />
+          </Key>
+          <Property Name="sid" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="day" Type="datetime" />
+        </EntityType>
         <!--生成过程中发现错误:
 警告 6002: 表/视图“kaoqing.dbo.ZKAttendanceMonthStatistics”未定义主键。已推断出该键，并将定义创建为只读的表/视图。-->
         <EntityType Name="ZKAttendanceMonthStatistics">
@@ -712,6 +719,7 @@
           <EntitySet Name="LeaveClass" EntityType="Self.LeaveClass" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="LeaveClass1" EntityType="Self.LeaveClass1" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="USERINFO" EntityType="Self.USERINFO" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="wokeday" EntityType="Self.wokeday" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ACGroup" EntityType="Self.ACGroup" store:Type="Tables" store:Schema="dbo">
             <DefiningQuery>SELECT 
     [ACGroup].[GroupID] AS [GroupID], 
@@ -1787,6 +1795,7 @@
           <EntitySet Name="UserUpdates" EntityType="Self.UserUpdates" />
           <EntitySet Name="ZKAttendanceMonthStatistics" EntityType="Self.ZKAttendanceMonthStatistics" />
           <EntitySet Name="USERINFO" EntityType="kaoqingModel.USERINFO" />
+          <EntitySet Name="wokeday" EntityType="kaoqingModel.wokeday" />
         </EntityContainer>
         <EntityType Name="USERINFO">
           <Key>
@@ -1843,6 +1852,13 @@
           <Property Name="TimeZone2" Type="Int32" />
           <Property Name="TimeZone3" Type="Int32" />
           <Property Name="StateATT" Type="Int32" />
+        </EntityType>
+        <EntityType Name="wokeday">
+          <Key>
+            <PropertyRef Name="sid" />
+          </Key>
+          <Property Name="sid" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="day" Type="DateTime" Precision="3" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -2471,6 +2487,14 @@
                 <ScalarProperty Name="SSN" ColumnName="SSN" />
                 <ScalarProperty Name="Badgenumber" ColumnName="Badgenumber" />
                 <ScalarProperty Name="USERID" ColumnName="USERID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="wokeday">
+            <EntityTypeMapping TypeName="kaoqingModel.wokeday">
+              <MappingFragment StoreEntitySet="wokeday">
+                <ScalarProperty Name="day" ColumnName="day" />
+                <ScalarProperty Name="sid" ColumnName="sid" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -53,11 +53,15 @@ namespace ATT_API.Models
             public int USERID { get; set; }
             public string NAME { get; set; }
             public int StateATT { get; set; }
+            public string OPHONE { get; set; }
         }
         public class UserInfoList
         {
             public List<UserInfo> listAll;
             public List<UserInfo> list;
+            public List<USERINFO> all;
+            public List<DateTime?> listtime;
+            public int tbCount;
             public int ErrorCode { get; set; }
         }
         public class SetXList

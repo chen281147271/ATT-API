@@ -62,5 +62,6 @@ namespace ATT_API
         public virtual DbSet<UserUpdates> UserUpdates { get; set; }
         public virtual DbSet<ZKAttendanceMonthStatistics> ZKAttendanceMonthStatistics { get; set; }
         public virtual DbSet<USERINFO> USERINFO { get; set; }
+        public virtual DbSet<wokeday> wokeday { get; set; }
     }
 }

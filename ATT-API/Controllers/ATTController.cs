@@ -47,5 +47,17 @@ namespace ATT_API.Controllers
         {
             return Ok(queryATT.SetX( sTime, eTime, UID));
         }
+        [HttpGet]
+        [Route("api/GetYGInfo")]
+        public IHttpActionResult GetYGInfo( int PageSize, int CurPage, bool isall ,string Key)
+        {
+            return Ok(queryATT.GetYGInfo( PageSize, CurPage, isall, Key));
+        }
+        [HttpGet]
+        [Route("api/SetYGInfo")]
+        public IHttpActionResult SetYGInfo(string USERID, string Name, string OPHONE, string StateATT)
+        {
+            return Ok(queryATT.SetYGInfo( USERID,  Name,  OPHONE,  StateATT));
+        }
     }
 }

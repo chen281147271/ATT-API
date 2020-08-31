@@ -42,6 +42,7 @@
         <EntityTypeShape EntityType="kaoqingModel.UserUpdates" Width="1.5" PointX="16.75" PointY="10.75" IsExpanded="true" />
         <EntityTypeShape EntityType="kaoqingModel.ZKAttendanceMonthStatistics" Width="1.5" PointX="16.75" PointY="13.75" IsExpanded="true" />
         <EntityTypeShape EntityType="kaoqingModel.USERINFO" Width="1.5" PointX="7.375" PointY="16.75" />
+        <EntityTypeShape EntityType="kaoqingModel.wokeday" Width="1.5" PointX="0.75" PointY="18.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

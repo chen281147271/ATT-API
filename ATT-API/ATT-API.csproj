@@ -332,6 +332,9 @@
     </Compile>
     <Compile Include="Utils\AccessHelper.cs" />
     <Compile Include="Utils\SQLServerHepler.cs" />
+    <Compile Include="wokeday.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
     <Compile Include="ZKAttendanceMonthStatistics.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
